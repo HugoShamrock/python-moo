@@ -1,0 +1,4 @@
+moo
+===
+
+descendant of foo ;)
