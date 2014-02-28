@@ -1,0 +1,7 @@
+# Prázdné řádky nebo řádky začínající znakem # budou ignorovány.
+# Standardní masku souborů.
+# Chcete-li označit adresář, můžete masku zakončit lomítkem (/).
+# Pokud řádek začíná vykřičníkem (!), maska na něm je negována.
+
+*.pyc
+__pycache__/
