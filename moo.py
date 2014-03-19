@@ -38,21 +38,24 @@ class moo():
         for database in self.databases:
             print('\n[{}]'.format(self.hide_password(database)))
             parms = self.execute_query(database, query)
-            self.print_rows(*parms)
+            if parms: self.print_rows(*parms)
         print()
 
     def hide_password(self, database):
         return re.sub(r':[^:]*@', r'@', database)
 
     def execute_query(self, database, query):
-        engine = sa.create_engine(database)
-        connection = engine.connect()
-        result = connection.execute(query)
-        rows = result.fetchall()
-        keys = result.keys()
-        result.close()
-        connection.close()
-        return (rows, keys)
+        try:
+            engine = sa.create_engine(database)
+            connection = engine.connect()
+            result = connection.execute(query)
+            rows = result.fetchall()
+            keys = result.keys()
+            result.close()
+            connection.close()
+            return (rows, keys)
+        except Exception as e:
+            print('{}'.format(e))
 
     def print_rows(self, rows, keys):
         print('{}'.format(keys))
