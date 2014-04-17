@@ -41,6 +41,12 @@ class moo():
             if parms: self.print_rows(*parms)
         print()
 
+    def __call__(self, something): # functor
+        if ' ' in something:
+            self.sql(something)
+        else:
+            self.run(something)
+
     def hide_password(self, database):
         return re.sub(r':[^:]*@', r'@', database)
 
@@ -64,4 +70,4 @@ class moo():
         if self.debug: print('[moo-debug: num_rows={}]'.format(len(rows)))
 
 if __name__ == '__main__':
-    moo('sqlite:///:memory:', True).sql('select 23 as number')
+    moo('sqlite:///:memory:', True)('select 23 as number')
