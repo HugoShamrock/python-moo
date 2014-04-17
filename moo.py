@@ -6,7 +6,7 @@ import re
 
 class moo():
 
-    def __init__(self, databases=None, debug=False, script_directory=None):
+    def __init__(self, databases=None, script_directory=None, debug=False):
         self.debug = debug
         self.script_directory = script_directory
         if self.debug: print('[moo-debug: debug={}]'.format(self.debug))
@@ -70,4 +70,4 @@ class moo():
         if self.debug: print('[moo-debug: num_rows={}]'.format(len(rows)))
 
 if __name__ == '__main__':
-    moo('sqlite:///:memory:', True)('select 23 as number')
+    moo('sqlite:///:memory:', debug=True)('select 23 as number')
