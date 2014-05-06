@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
 
 import sqlalchemy as sa
-import os.path
+import os
 import re
+import multiprocessing
 
 class moo():
 
-    def __init__(self, databases=None, script_directory=None, debug=False):
+    def __init__(self, databases=None, *, config=None, directory=None, parallel=None, debug=False):
+        self.databases = self.get_databases(databases, config)
+        self.directory = directory
+        self.parallel = parallel
         self.debug = debug
-        self.script_directory = script_directory
         if self.debug: print('[moo-debug: debug={}]'.format(self.debug))
-        result = self.read_file(databases)
-        if result:
-            self.databases = result.splitlines()
+
+    def get_databases(self, databases, config):
+        if config and (databases is None):
+            return self.read_file(config).splitlines()
+            #print('[moo-error: file \'{}\' does not exist]'.format(filename))
+        elif databases and (config is None):
+            return databases
         else:
-            if isinstance(databases, str):
-                self.databases = [databases]
-            else:
-                self.databases = list(databases)
+            raise '$$get_database$$'
+
+    def get_query(self, query, file):
+        if file and (query is None):
+            return self.read_file(os.path.join(self.directory, file)).strip()
+            #print('[moo-error: file \'{}\' does not exist]'.format(filename))
+        elif query and (file is None):
+            return query
+        else:
+            raise '$$get_query$$'
 
     def read_file(self, filename):
         if os.path.exists(filename):
@@ -26,48 +39,47 @@ class moo():
         else:
             return None
 
-    def run(self, filename):
-        result = self.read_file(os.path.join(self.script_directory, filename))
-        if result:
-            self.sql(result.strip())
-        else:
-            print('[moo-error: file \'{}\' does not exist]'.format(filename))
+    def get_parallel(self, parallel):
+        #result = self.parallel
+        #result = parallel
+        #return len(self.databases)
+        return None
 
-    def sql(self, query):
-        print('[{}]'.format(query))
-        for database in self.databases:
-            print('\n[{}]'.format(self.hide_password(database)))
-            parms = self.execute_query(database, query)
-            if parms: self.print_rows(*parms)
+    def __call__(self, query=None, *, file=None, parallel=None): # functor
+        self.query = self.get_query(query, file)
+        print('[{}]'.format(self.query))
+        pool = multiprocessing.Pool(self.get_parallel(parallel))
+        pool.map_async(self.execute_query, self.databases, 1, self.r_print)
+        pool.close()
+        pool.join()
         print()
-
-    def __call__(self, something): # functor
-        if ' ' in something:
-            self.sql(something)
-        else:
-            self.run(something)
 
     def hide_password(self, database):
         return re.sub(r':[^:]*@', r'@', database)
 
-    def execute_query(self, database, query):
+    def execute_query(self, database):
+        r_queue = []
+        r_queue.append('\n[{}] pid={}'.format(self.hide_password(database), os.getpid()))
         try:
             engine = sa.create_engine(database)
             connection = engine.connect()
-            result = connection.execute(query)
+            result = connection.execute(self.query)
             rows = result.fetchall()
             keys = result.keys()
             result.close()
             connection.close()
-            return (rows, keys)
+            r_queue.append('{}'.format(keys))
+            for row in rows:
+                r_queue.append('{}'.format(row))
+            if self.debug: r_queue.append('[moo-debug: num_rows={}]'.format(len(rows)))
+            return r_queue
         except Exception as e:
             print('{}'.format(e))
 
-    def print_rows(self, rows, keys):
-        print('{}'.format(keys))
-        for row in rows:
-            print('{}'.format(row))
-        if self.debug: print('[moo-debug: num_rows={}]'.format(len(rows)))
+    def r_print(self, r_queue):
+        for results in r_queue:
+            for result in results:
+                print(result)
 
 if __name__ == '__main__':
-    moo('sqlite:///:memory:', debug=True)('select 23 as number')
+    moo(['sqlite:///:memory:'], debug=True)('select 23 as number')
