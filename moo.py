@@ -3,7 +3,7 @@
 import sqlalchemy as sa
 import os.path
 import re
-import multiprocessing
+import threading, queue
 import sys
 
 class moo():
@@ -38,10 +38,10 @@ class moo():
     def sql(self, query):
         print('[{}]'.format(query))
         sys.stdout.flush()
-        w_queue = multiprocessing.JoinableQueue()
+        w_queue = queue.Queue()
         w_count = len(self.databases) # degree of parallelism (max_parallel) ~> len(self.databases)
         for i in range(w_count):
-            w_process = multiprocessing.Process(target = lambda: self.w_sql(w_queue, query, i+1, w_count))
+            w_process = threading.Thread(target = lambda: self.w_sql(w_queue, query, i+1, w_count))
             w_process.daemon = True
             w_process.start()
         for database in self.databases:
