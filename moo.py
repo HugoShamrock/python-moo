@@ -3,7 +3,11 @@
 import sqlalchemy as sa
 import os
 import re
-import multiprocessing
+#from multiprocessing import Pool
+from multiprocessing.dummy import Pool # multiprocessing down/kill unexpectedly encfs mount points
+
+#http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
+#from multiprocessing.pool import ThreadPool as Pool
 
 class moo():
 
@@ -48,10 +52,10 @@ class moo():
     def __call__(self, query=None, *, file=None, parallel=None): # functor
         self.query = self.get_query(query, file)
         print('[{}]'.format(self.query))
-        pool = multiprocessing.Pool(self.get_parallel(parallel))
-        pool.map_async(self.execute_query, self.databases, 1, self.r_print)
-        pool.close()
-        pool.join()
+        with Pool() as pool: # self.get_parallel(parallel)
+            pool.map_async(self.execute_query, self.databases, 1, self.r_print)
+            pool.close()
+            pool.join()
         print()
 
     def hide_password(self, database):
