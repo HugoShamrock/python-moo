@@ -4,55 +4,59 @@ import sqlalchemy as sa
 import os
 import re
 #from multiprocessing import Pool
-from multiprocessing.dummy import Pool # multiprocessing down/kill unexpectedly encfs mount points
-
+#from multiprocessing.dummy import Pool # multiprocessing down/kill unexpectedly encfs mount points
 #http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
-#from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing.pool import ThreadPool as Pool # ~> $$still broken encfs$$ :(
 
 class moo():
 
-    def __init__(self, databases=None, *, config=None, directory=None, parallel=None, debug=False):
+    class mooError(Exception): pass
+
+    def __init__(self, databases=None, *, config=None, directory='', parallel=None, debug=False):
         self.databases = self.get_databases(databases, config)
         self.directory = directory
         self.parallel = parallel
         self.debug = debug
-        if self.debug: print('[moo-debug: debug={}]'.format(self.debug))
+        if debug:
+            self.print_debug = lambda *args, **kwargs: print(*args, **kwargs)
+        else:
+            self.print_debug = lambda *args, **kwargs: None
+        self.print_debug('$debug={}$'.format(self.debug))
 
     def get_databases(self, databases, config):
         if config and (databases is None):
-            return self.read_file(config).splitlines()
-            #print('[moo-error: file \'{}\' does not exist]'.format(filename))
+            return self.read_file(config).splitlines()           
+        elif isinstance(databases, str) and (config is None):
+            return [databases]
         elif databases and (config is None):
             return databases
         else:
-            raise '$$get_database$$'
+            raise self.mooError('get_databases({}, {})'.format(databases, config))
 
     def get_query(self, query, file):
         if file and (query is None):
             return self.read_file(os.path.join(self.directory, file)).strip()
-            #print('[moo-error: file \'{}\' does not exist]'.format(filename))
         elif query and (file is None):
             return query
         else:
-            raise '$$get_query$$'
+            raise self.mooError('get_query({}, {})'.format(query, file))
 
     def read_file(self, filename):
         if os.path.exists(filename):
             with open(filename, mode='r', encoding='utf-8') as f:
                 return f.read()
         else:
-            return None
+            raise self.mooError('file {} does not exist'.format(filename))
 
     def get_parallel(self, parallel):
-        #result = self.parallel
-        #result = parallel
-        #return len(self.databases)
-        return None
+        result = parallel or self.parallel or None
+        self.print_debug('$parallel={}$'.format(result))
+        return result 
 
     def __call__(self, query=None, *, file=None, parallel=None): # functor
         self.query = self.get_query(query, file)
         print('[{}]'.format(self.query))
-        with Pool() as pool: # self.get_parallel(parallel)
+        with Pool(self.get_parallel(parallel)) as pool:
             pool.map_async(self.execute_query, self.databases, 1, self.r_print)
             pool.close()
             pool.join()
@@ -75,10 +79,11 @@ class moo():
             r_queue.append('{}'.format(keys))
             for row in rows:
                 r_queue.append('{}'.format(row))
-            if self.debug: r_queue.append('[moo-debug: num_rows={}]'.format(len(rows)))
+            if self.debug: r_queue.append('$num_rows={}$'.format(len(rows)))
             return r_queue
         except Exception as e:
             print('{}'.format(e))
+            raise
 
     def r_print(self, r_queue):
         for results in r_queue:
@@ -86,4 +91,4 @@ class moo():
                 print(result)
 
 if __name__ == '__main__':
-    moo(['sqlite:///:memory:'], debug=True)('select 23 as number')
+    moo('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')
