@@ -12,9 +12,9 @@ class moo():
 
     class mooError(Exception): pass
 
-    def __init__(self, databases=None, *, config=None, directory='', parallel=None, debug=False):
+    def __init__(self, databases=None, *, config=None, script_directory='', parallel=None, debug=False):
         self.databases = self.get_databases(databases, config)
-        self.directory = directory
+        self.script_directory = script_directory
         self.parallel = parallel
         self.debug = debug
         if debug:
@@ -25,7 +25,7 @@ class moo():
 
     def get_databases(self, databases, config):
         if config and (databases is None):
-            return self.read_file(config).splitlines()           
+            return self.read_file(config).splitlines()
         elif isinstance(databases, str) and (config is None):
             return [databases]
         elif databases and (config is None):
@@ -33,13 +33,13 @@ class moo():
         else:
             raise self.mooError('get_databases({}, {})'.format(databases, config))
 
-    def get_query(self, query, file):
-        if file and (query is None):
-            return self.read_file(os.path.join(self.directory, file)).strip()
-        elif query and (file is None):
+    def get_query(self, query, script):
+        if script and (query is None):
+            return self.read_file(os.path.join(self.script_directory, script)).strip()
+        elif query and (script is None):
             return query
         else:
-            raise self.mooError('get_query({}, {})'.format(query, file))
+            raise self.mooError('get_query({}, {})'.format(query, script))
 
     def read_file(self, filename):
         if os.path.exists(filename):
@@ -49,12 +49,12 @@ class moo():
             raise self.mooError('file {} does not exist'.format(filename))
 
     def get_parallel(self, parallel):
-        result = parallel or self.parallel or None
-        self.print_debug('$parallel={}$'.format(result))
-        return result 
+        parallel = parallel or self.parallel or None
+        self.print_debug('$parallel={}$'.format(parallel))
+        return parallel
 
-    def __call__(self, query=None, *, file=None, parallel=None): # functor
-        self.query = self.get_query(query, file)
+    def __call__(self, query=None, *, script=None, parallel=None): # functor
+        self.query = self.get_query(query, script)
         print('[{}]'.format(self.query))
         with Pool(self.get_parallel(parallel)) as pool:
             pool.map_async(self.execute_query, self.databases, 1, self.r_print)
