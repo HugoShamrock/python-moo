@@ -8,7 +8,7 @@ import re
 #http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
 from multiprocessing.pool import ThreadPool as Pool # ~> $$still broken encfs$$ :(
 
-class moo():
+class Query():
 
     class mooError(Exception): pass
 
@@ -62,6 +62,9 @@ class moo():
             pool.join()
         print()
 
+    def script(self, script=None, *, parallel=None):
+        self.__call__(script=script, parallel=parallel)
+
     def hide_password(self, database):
         return re.sub(r':[^:]*@', r'@', database)
 
@@ -91,4 +94,4 @@ class moo():
                 print(result)
 
 if __name__ == '__main__':
-    moo('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')
+    Query('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')
