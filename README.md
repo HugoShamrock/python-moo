@@ -36,13 +36,12 @@ root@work:~# apt-get moo
 ```python
 #!/usr/bin/env python3
 
-from moo.moo import moo as moo
-query = moo('config.moo', './oracle/')
-
-#query = moo(databases='config.moo', script_directory='./oracle/') # full version
+from moo.database import Query
+query = Query(config='config.moo', script_directory='./oracle/')
 
 query('select host_name from v$instance')
-query('free_space.sql')
+query(script='free_space.sql')
+query.script('free_space.sql')
 ```
 
 Any ideas are welcome
