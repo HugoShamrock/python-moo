@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
-import sqlalchemy as sa
-import os
-import re
-#from multiprocessing import Pool
-#from multiprocessing.dummy import Pool # multiprocessing down/kill unexpectedly encfs mount points
-#http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
-from multiprocessing.pool import ThreadPool as Pool # ~> $$still broken encfs$$ :(
+import os, re, sqlalchemy as sa
+from multiprocessing import Pool
+from multiprocessing.dummy import Pool
+from multiprocessing.pool import ThreadPool as Pool # http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
+
+# $$todo$$ ~> multiprocessing unexpectedly kill encfs mount-points
 
 class Query():
 
@@ -17,11 +16,13 @@ class Query():
         self.script_directory = script_directory
         self.parallel = parallel
         self.debug = debug
-        if debug:
-            self.print_debug = lambda *args, **kwargs: print(*args, **kwargs)
+        if self.debug:
+            self.print_debug = print
         else:
-            self.print_debug = lambda *args, **kwargs: None
+            self.print_debug = self.nothing
         self.print_debug('$debug={}$'.format(self.debug))
+
+    def nothing(*args, **kwargs): pass
 
     def get_databases(self, databases, config):
         if config and (databases is None):
@@ -75,8 +76,7 @@ class Query():
             engine = sa.create_engine(database)
             connection = engine.connect()
             result = connection.execute(self.query)
-            rows = result.fetchall()
-            keys = result.keys()
+            keys, rows = result.keys(), result.fetchall()
             result.close()
             connection.close()
             r_queue.append('{}'.format(keys))
@@ -89,9 +89,10 @@ class Query():
             raise
 
     def r_print(self, r_queue):
-        for results in r_queue:
-            for result in results:
-                print(result)
+        for rows in r_queue:
+            for row in rows:
+                print(row)
 
 if __name__ == '__main__':
     Query('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')
+    Query('sqlite:///:memory:')('select 23 as number union select 42 as number')
