@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
+# $$todo$$ ~> multiprocessing unexpectedly kill encfs mount-points
+
 import os, re, sqlalchemy as sa
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool
 from multiprocessing.pool import ThreadPool as Pool # http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
+import moo.connector
 
-# $$todo$$ ~> multiprocessing unexpectedly kill encfs mount-points
+class execute(moo.connector.execute):
 
-class Query():
+    class moo_error(Exception): pass
 
-    class mooError(Exception): pass
-
-    def __init__(self, databases=None, *, config=None, script_directory='', parallel=None, debug=False):
-        self.databases = self.get_databases(databases, config)
+    def __init__(self, connections=None, *, config=None, script_directory='', parallel=None, debug=False):
+        self.connections = self.get_connections(connections, config)
         self.script_directory = script_directory
         self.parallel = parallel
         self.debug = debug
@@ -24,41 +25,41 @@ class Query():
 
     def nothing(*args, **kwargs): pass
 
-    def get_databases(self, databases, config):
-        if config and (databases is None):
+    def get_connections(self, connections, config):
+        if config and (connections is None):
             return self.read_file(config).splitlines()
-        elif isinstance(databases, str) and (config is None):
-            return [databases]
-        elif databases and (config is None):
-            return databases
+        elif isinstance(connections, str) and (config is None):
+            return [connections]
+        elif connections and (config is None):
+            return connections
         else:
-            raise self.mooError('get_databases({}, {})'.format(databases, config))
+            raise self.moo_error('get_connections({}, {})'.format(connections, config))
 
-    def get_query(self, query, script):
-        if script and (query is None):
+    def get_command(self, command, script):
+        if script and (command is None):
             return self.read_file(os.path.join(self.script_directory, script)).strip()
-        elif query and (script is None):
-            return query
+        elif command and (script is None):
+            return command
         else:
-            raise self.mooError('get_query({}, {})'.format(query, script))
+            raise self.moo_error('get_command({}, {})'.format(command, script))
 
     def read_file(self, filename):
         if os.path.exists(filename):
             with open(filename, mode='r', encoding='utf-8') as f:
                 return f.read()
         else:
-            raise self.mooError('file {} does not exist'.format(filename))
+            raise self.moo_error('file {} does not exist'.format(filename))
 
     def get_parallel(self, parallel):
         parallel = parallel or self.parallel or None
         self.print_debug('$parallel={}$'.format(parallel))
         return parallel
 
-    def __call__(self, query=None, *, script=None, parallel=None): # functor
-        self.query = self.get_query(query, script)
-        print('[{}]'.format(self.query))
+    def __call__(self, command=None, *, script=None, parallel=None): # functor
+        self.command = self.get_command(command, script)
+        print('[{}]'.format(self.command))
         with Pool(self.get_parallel(parallel)) as pool:
-            pool.map_async(self.execute_query, self.databases, 1, self.r_print)
+            pool.map_async(self.execute_command, self.connections, 1, self.r_print)
             pool.close()
             pool.join()
         print()
@@ -66,16 +67,16 @@ class Query():
     def script(self, script=None, *, parallel=None):
         self.__call__(script=script, parallel=parallel)
 
-    def hide_password(self, database):
-        return re.sub(r':[^:]*@', r'@', database)
+    def hide_password(self, connection):
+        return re.sub(r':[^:]*@', r'@', connection)
 
-    def execute_query(self, database):
+    def execute_command(self, connection):
         r_queue = []
-        r_queue.append('\n[{}] pid={}'.format(self.hide_password(database), os.getpid()))
+        r_queue.append('\n[{}] pid={}'.format(self.hide_password(connection), os.getpid()))
         try:
-            engine = sa.create_engine(database)
+            engine = sa.create_engine(connection)
             connection = engine.connect()
-            result = connection.execute(self.query)
+            result = connection.execute(self.command)
             keys, rows = result.keys(), result.fetchall()
             result.close()
             connection.close()
@@ -94,5 +95,5 @@ class Query():
                 print(row)
 
 if __name__ == '__main__':
-    Query('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')
-    Query('sqlite:///:memory:')('select 23 as number union select 42 as number')
+    execute('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')
+    execute('sqlite:///:memory:')('select 23 as number union select 42 as number')
