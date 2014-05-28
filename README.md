@@ -1,6 +1,9 @@
 moo - agile descendant foo
 ==========================
 
+###Return to the goals of foo (implemented):
+ * SSH connector for execution remote Unix/Linux shell commands
+
 ###What is moo:
 
  * Easy way how to run the same query in multiple SQL databases
@@ -42,9 +45,6 @@ execute = moo.database.execute(config='./examples/oracle.moo', script_directory=
 execute('select host_name from v$instance')
 execute.script('hostname.sql') # or: execute(script='hostname.sql')
 ```
-
-###Return to the goals of foo (implemented):
- * SSH connector for execution remote Unix/Linux shell commands
 
 ###How to use moo.ssh:
 
