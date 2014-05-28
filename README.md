@@ -31,17 +31,31 @@ root@work:~# apt-get moo
 ..."Have you mooed today?"...
 ```
 
-###How to use moo:
+###How to use moo.database:
 
 ```python
 #!/usr/bin/env python3
 
-from moo.database import Query
-query = Query(config='config.moo', script_directory='./oracle/')
+import moo.database
+execute = moo.database.execute(config='./examples/oracle.moo', script_directory='./examples/')
 
-query('select host_name from v$instance')
-query(script='free_space.sql')
-query.script('free_space.sql')
+execute('select host_name from v$instance')
+execute.script('hostname.sql') # or: execute(script='hostname.sql')
+```
+
+###Return to the goals of foo (implemented):
+ * SSH connector for execution remote Unix/Linux shell commands
+
+###How to use moo.ssh:
+
+```python
+#!/usr/bin/env python3
+
+import moo.ssh
+execute = moo.ssh.execute(config='./examples/ssh.moo', script_directory='./examples/')
+
+execute('df -h')
+execute.script('freespace.sh') # or: execute(script='freespace.sh')
 ```
 
 Any ideas are welcome
