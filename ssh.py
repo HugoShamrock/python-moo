@@ -27,7 +27,7 @@ class execute(moo.connector.execute):
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(**connection)
             stdin, stdout, stderr = client.exec_command(self.command)
-            stdout_text, stderr_text = stdout.read().strip(), stderr.read().strip()
+            stdout_text, stderr_text = stdout.read().decode().strip(), stderr.read().decode().strip()
             if self.debug: r_queue.append('[stdout] ~>')
             if stdout_text: r_queue.append(stdout_text)
             if self.debug: r_queue.append('[stderr] ~>')
