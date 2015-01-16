@@ -6,7 +6,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name = 'moo',
+    name = 'python-moo',
     version = '0.3',
     description = 'Easy way how to run the same query in multiple SQL databases',
     long_description = open('README.rst').read() + '\n' + open('CHANGES.rst').read(),
