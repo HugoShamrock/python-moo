@@ -30,6 +30,7 @@ class execute(moo.connector.execute):
             connection.close()
             r_queue.append('{}'.format(keys))
             for row in rows:
+                row = [ str(element) for element in row ] # str(datetime.xxx)
                 r_queue.append('{}'.format(row))
             if self.debug: r_queue.append('$num_rows={}$'.format(len(rows)))
             return r_queue
