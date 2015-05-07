@@ -4,14 +4,15 @@
 
 import os
 from multiprocessing import Pool
-from multiprocessing.dummy import Pool
-from multiprocessing.pool import ThreadPool as Pool # http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
+#from multiprocessing.dummy import Pool
+#from multiprocessing.pool import ThreadPool as Pool # http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
 
 class execute():
 
     class moo_error(Exception): pass
 
     def __init__(self, connections=None, *, config=None, script_directory='', parallel=None, debug=False):
+        print('[cpu_count{}]'.format(os.cpu_count()))
         self.connections = self.get_connections(connections, config)
         self.script_directory = script_directory
         self.parallel = parallel
