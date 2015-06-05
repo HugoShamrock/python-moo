@@ -35,8 +35,8 @@ class execute(moo.connector.execute):
             if self.debug: r_queue.append('$num_rows={}$'.format(len(rows)))
             return r_queue
         except Exception as e:
-            print('{}'.format(e))
-            raise
+            r_queue.append('{}'.format(e))
+            return r_queue
 
 if __name__ == '__main__':
     execute('sqlite:///:memory:', debug=True)('select 23 as number union select 42 as number')

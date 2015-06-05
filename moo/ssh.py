@@ -35,8 +35,8 @@ class execute(moo.connector.execute):
             client.close()
             return r_queue
         except Exception as e:
-            print('{}'.format(e))
-            raise
+            r_queue.append('{}'.format(e))
+            return r_queue
 
 if __name__ == '__main__':
     execute([{'hostname': 'localhost', 'username': 'pm', 'password': '********'}], debug=True)('df -h')
