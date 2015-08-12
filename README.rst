@@ -68,7 +68,7 @@ How to use moo.ssh
 
 Any ideas are welcome
 
-idxxx23
+Hugo Shamrock
 
 .. _Python: http://www.python.org/
 .. _SQLAlchemy: http://www.sqlalchemy.org/

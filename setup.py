@@ -10,9 +10,9 @@ setup(
     version = '0.3',
     description = 'Easy way how to run the same query in multiple SQL databases',
     long_description = open('README.rst').read() + '\n' + open('CHANGES.rst').read(),
-    author = 'GNU Knight',
-    author_email = 'idxxx23@gmail.com',
-    url = 'https://github.com/idxxx23/moo',
+    author = 'Hugo Shamrock',
+    author_email = 'hugo.shamrock@gmail.com',
+    url = 'https://github.com/HugoShamrock/python-moo',
     packages = ['moo'],
     classifiers = [ # https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Programming Language :: Python :: 3',
