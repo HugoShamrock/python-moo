@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-import os, re, sqlalchemy as sa
+import os
+import re
+import sqlalchemy as sa
 import moo.connector
+
 
 class execute(moo.connector.execute):
 
@@ -30,9 +33,10 @@ class execute(moo.connector.execute):
             connection.close()
             r_queue.append('{}'.format(keys))
             for row in rows:
-                row = [ str(element) for element in row ] # str(datetime.xxx)
+                row = [str(element) for element in row]  # str(datetime.xxx)
                 r_queue.append('{}'.format(row))
-            if self.debug: r_queue.append('$num_rows={}$'.format(len(rows)))
+            if self.debug:
+                r_queue.append('$num_rows={}$'.format(len(rows)))
             return r_queue
         except Exception as e:
             r_queue.append('{}'.format(e))

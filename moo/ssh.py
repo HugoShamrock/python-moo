@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-import os, paramiko
+import os
+import paramiko
 from configurator.formats import json as configurator
 import moo.connector
 
+
 class execute(moo.connector.execute):
 
-    def get_connections(self, connections, config):    
+    def get_connections(self, connections, config):
         if config and (connections is None):
             return configurator.load(config)['connections']
         elif isinstance(connections, str) and (config is None):
@@ -28,10 +30,14 @@ class execute(moo.connector.execute):
             client.connect(**connection)
             stdin, stdout, stderr = client.exec_command(self.command)
             stdout_text, stderr_text = stdout.read().decode().strip(), stderr.read().decode().strip()
-            if self.debug: r_queue.append('[stdout] ~>')
-            if stdout_text: r_queue.append(stdout_text)
-            if self.debug: r_queue.append('[stderr] ~>')
-            if stderr_text: r_queue.append(stderr_text)
+            if self.debug:
+                r_queue.append('[stdout] ~>')
+            if stdout_text:
+                r_queue.append(stdout_text)
+            if self.debug:
+                r_queue.append('[stderr] ~>')
+            if stderr_text:
+                r_queue.append(stderr_text)
             client.close()
             return r_queue
         except Exception as e:
