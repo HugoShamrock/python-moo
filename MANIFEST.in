@@ -1,4 +1,4 @@
-include COPYING.txt
+include LICENSE.txt
 include README.rst
 include CHANGES.rst
 recursive-include moo/examples *

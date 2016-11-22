@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
+
+import moo
+
+long_description = open('README.rst').read() + '\n' + open('CHANGES.rst').read()
 
 setup(
     name='python-moo',
-    version='0.4',
+    version=moo.__version__,
     description='Easy way how to run the same query in multiple SQL databases',
-    long_description=open('README.rst').read() + '\n' + open('CHANGES.rst').read(),
+    long_description=long_description,
     author='Hugo Shamrock',
     author_email='hugo.shamrock@gmail.com',
     url='https://github.com/HugoShamrock/python-moo',
