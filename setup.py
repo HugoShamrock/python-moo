@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='python-moo',
-    version='0.3',
+    version='0.4',
     description='Easy way how to run the same query in multiple SQL databases',
     long_description=open('README.rst').read() + '\n' + open('CHANGES.rst').read(),
     author='Hugo Shamrock',
